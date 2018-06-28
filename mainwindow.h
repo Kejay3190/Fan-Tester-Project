@@ -25,16 +25,14 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    QTime *elapsedTestTime; //used for calculating the time elapsed in the test
+    QTime *elapsedTestTime; //for calculating elapsed test time
     QTimer *elapsedTimer; //timer for re-calculating the elapsed time
-    QTimer *performanceTimer; //timer for re-measuring RPM, voltage, and current
-    QTimer *autoModeTimer;
+    QTimer *performanceTimer; //timer for measuring RPM, voltage, and current
+    QTimer *autoModeTimer; //timer for auto mode duration
     PowerSupply *powerSupply;
     PwmBoard *pwmBoard;
     SpeedSensor *speedSensor;
     SettingsDialog *settingsDialog;
-
-    int row = 0;
 
     void applySettings(const SettingsDialog *settingsDialog);
     void enableWidgets();
