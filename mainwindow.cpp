@@ -30,8 +30,8 @@ void MainWindow::startTest()
     if (ui->manualRadioButton->isChecked()) {//manual mode is selected
         emit testStarted();
         elapsedTestTime->start(); //store the current time
-        elapsedTimer->start(); //start the timer
-        ui->tabWidget->setTabEnabled(1, false); //disable the settings tab
+        elapsedTimer->start();
+        ui->tabWidget->setTabEnabled(1, false);
     } else {
         runAutoTest();
     }
@@ -40,25 +40,23 @@ void MainWindow::startTest()
 void MainWindow::stopTest()
 {
     elapsedTimer->stop();
-    emit testStopped();
     ui->tabWidget->setTabEnabled(1, true);
     if (autoModeTimer->isActive()) {
         autoModeTimer->stop();
     }
+    emit testStopped();
 }
 
 void MainWindow::runAutoTest()
 {
     if (autoTableIsValid()) {
-        if (ui->autoTestTable->rowCount() == 1) {
-            powerSupply->setVoltage(ui->autoTestTable->item(row, 0)->text());
-            pwmBoard->setDutyCycle(ui->autoTestTable->item(row, 1)->text());
-            autoModeTimer->setInterval(ui->autoTestTable->item(row, 2)->text().toInt() * 1000);
+            powerSupply->setVoltage(ui->autoTestTable->item(0, 0)->text());
+            pwmBoard->setDutyCycle(ui->autoTestTable->item(0, 1)->text());
+            autoModeTimer->setInterval(ui->autoTestTable->item(0, 2)->text().toInt() * 1000);
             emit testStarted();
             elapsedTestTime->start(); //store the current time
-            elapsedTimer->start(); //start the timer
+            elapsedTimer->start();
             autoModeTimer->start();
-        }
     }
 }
 
@@ -71,8 +69,15 @@ void MainWindow::setPerformanceTimerInterval(const int &newInterval)
 
 void MainWindow::goToNextSpeed()
 {
+    static int row = 0;
     if (row + 1 == ui->autoTestTable->rowCount()) {
         stopTest();
+        row = 0;
+    } else {
+        ++row;
+        powerSupply->setVoltage(ui->autoTestTable->item(row, 0)->text());
+        pwmBoard->setDutyCycle(ui->autoTestTable->item(row, 1)->text());
+        autoModeTimer->setInterval(ui->autoTestTable->item(row, 2)->text().toInt() * 1000);
     }
 }
 
