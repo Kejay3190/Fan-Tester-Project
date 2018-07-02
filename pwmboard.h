@@ -13,7 +13,7 @@ class PwmBoard : public QObject
     Q_OBJECT
 
 public:
-    explicit PwmBoard(QObject *parent, const QString &freq, const QString &duty);
+    explicit PwmBoard(QObject *parent);
 
 private:
     QSerialPort serialPort;

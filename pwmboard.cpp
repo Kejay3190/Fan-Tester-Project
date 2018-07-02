@@ -1,7 +1,7 @@
 #include "pwmboard.h"
 
-PwmBoard::PwmBoard(QObject *parent, const QString &freq, const QString &duty) :
-    QObject(parent), frequency(freq), dutyCycle(duty)
+PwmBoard::PwmBoard(QObject *parent) :
+    QObject(parent)
 {
     setupPort();
     buildFreqMap();
@@ -26,7 +26,7 @@ void PwmBoard::setDutyCycle(const QString &newDutyCycle)
 void PwmBoard::sendPwmCommand()
 {
     if (serialPort.isOpen()) {
-        QString str = frequency + dutyCycle;
+        QString str = frequency + dutyCycle + '\n';
         QByteArray command = str.toLocal8Bit();
         serialPort.write(command);
     }

@@ -38,7 +38,6 @@ private:
     void enableWidgets();
     bool autoTableIsValid();
     void makeConnections();
-    void buildFreqComboData();
     void setupTimers();
 
 private slots:

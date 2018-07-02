@@ -1,16 +1,14 @@
 #include "powersupply.h"
 
-PowerSupply::PowerSupply(QObject *parent, const QString &volt, const QString &curr) : QObject(parent)
+PowerSupply::PowerSupply(QObject *parent) : QObject(parent)
 {
     setupPort();
     configPowerSupply();
-    setVoltage(volt);
-    setCurrentLimit(curr);
 }
 
 void PowerSupply::setVoltage(const QString &newVoltage)
 {
-    if (voltage != newVoltage) {
+    if (voltage != newVoltage && powerSupplyIsRunning) {
         voltage = newVoltage;
         sendVoltageCommand();
     }
@@ -18,7 +16,7 @@ void PowerSupply::setVoltage(const QString &newVoltage)
 
 void PowerSupply::setCurrentLimit(const QString &newCurrentLimit)
 {
-    if (currentLimit != newCurrentLimit) {
+    if (currentLimit != newCurrentLimit && powerSupplyIsRunning) {
         currentLimit = newCurrentLimit;
         sendCurrentLimitCommand();
     }

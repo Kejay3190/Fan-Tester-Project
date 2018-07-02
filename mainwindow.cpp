@@ -8,10 +8,8 @@ MainWindow::MainWindow(QWidget *parent) :
     performanceTimer(new QTimer(this)), autoModeTimer(new QTimer(this)), settingsDialog(new SettingsDialog(this))
 {
     ui->setupUi(this);
-    buildFreqComboData();
-
-    powerSupply = new PowerSupply(this, ui->voltageSpinBox->cleanText(), ui->currentLimitSpinBox->cleanText());
-    pwmBoard = new PwmBoard(this, ui->freqComboBox->currentData().toString(), ui->dutyCycleSpinBox->text());
+    powerSupply = new PowerSupply(this);
+    pwmBoard = new PwmBoard(this);
     speedSensor = new SpeedSensor(this, ui->bladeCountSpinBox->value(), ui->samplesToAvgSpinBox->value());
 
     setupTimers();
@@ -29,6 +27,10 @@ void MainWindow::startTest()
 {
     if (ui->manualRadioButton->isChecked()) {//manual mode is selected
         emit testStarted();
+        powerSupply->setVoltage(ui->voltageSpinBox->text());
+        powerSupply->setCurrentLimit(ui->currentLimitSpinBox->text());
+        pwmBoard->setDutyCycle(ui->dutyCycleSpinBox->text());
+        pwmBoard->setFrequency(ui->freqComboBox->currentText());
         elapsedTestTime->start(); //store the current time
         elapsedTimer->start();
         ui->tabWidget->setTabEnabled(1, false);
@@ -50,10 +52,12 @@ void MainWindow::stopTest()
 void MainWindow::runAutoTest()
 {
     if (autoTableIsValid()) {
-            powerSupply->setVoltage(ui->autoTestTable->item(0, 0)->text());
-            pwmBoard->setDutyCycle(ui->autoTestTable->item(0, 1)->text());
-            autoModeTimer->setInterval(ui->autoTestTable->item(0, 2)->text().toInt() * 1000);
             emit testStarted();
+            powerSupply->setVoltage(ui->autoTestTable->item(0, 0)->text());
+            powerSupply->setCurrentLimit(ui->autoCurrentLimitSpinBox->text());
+            pwmBoard->setDutyCycle(ui->autoTestTable->item(0, 1)->text());
+            pwmBoard->setFrequency(ui->autoFreqComboBox->currentText());
+            autoModeTimer->setInterval(ui->autoTestTable->item(0, 2)->text().toInt() * 1000);
             elapsedTestTime->start(); //store the current time
             elapsedTimer->start();
             autoModeTimer->start();
@@ -162,13 +166,6 @@ void MainWindow::makeConnections()
     connect(speedSensor, &SpeedSensor::rpmChanged, this, &MainWindow::updateRpmDisplay);
     connect(settingsDialog, &SettingsDialog::settingsChanged, powerSupply, &PowerSupply::setupPort);
     connect(settingsDialog, &SettingsDialog::settingsChanged, pwmBoard, &PwmBoard::setupPort);
-}
-
-void MainWindow::buildFreqComboData()
-{
-    ui->freqComboBox->setItemData(0, "T");
-    ui->freqComboBox->setItemData(1, "H");
-    ui->freqComboBox->setItemData(2, "I");
 }
 
 void MainWindow::setupTimers()
