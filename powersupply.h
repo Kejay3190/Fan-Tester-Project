@@ -11,7 +11,7 @@ class PowerSupply : public QObject
     Q_OBJECT
 
 public:
-    explicit PowerSupply(QObject *parent, const QString &volt, const QString &curr);
+    explicit PowerSupply(QObject *parent);
 
 private:
     QSerialPort serialPort;
