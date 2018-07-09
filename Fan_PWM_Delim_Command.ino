@@ -108,7 +108,7 @@ void readNewCommand()
   }
   if (nFrequency == 140)
   {
-    fCycleTime = 7070;
+    fCycleTime = 7142;
     fDelayOn = fCycleTime * fDutyCycle;
     fDelayOff = fCycleTime - fDelayOn;
   } 

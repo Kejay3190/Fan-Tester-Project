@@ -26,7 +26,7 @@ MainWindow::~MainWindow()
 void MainWindow::startTest()
 {
     if (ui->manualRadioButton->isChecked()) {//manual mode is selected
-        emit testStarted();
+        powerSupply->start();
         powerSupply->setVoltage(ui->voltageSpinBox->text());
         powerSupply->setCurrentLimit(ui->currentLimitSpinBox->text());
         pwmBoard->setDutyCycle(ui->dutyCycleSpinBox->text());
@@ -34,33 +34,35 @@ void MainWindow::startTest()
         elapsedTestTime->start(); //store the current time
         elapsedTimer->start();
         ui->tabWidget->setTabEnabled(1, false);
-    } else {
+    } else { //auto mode is selected
         runAutoTest();
     }
 }
 
 void MainWindow::stopTest()
 {
+    powerSupply->stop();
+    pwmBoard->setDutyCycle("0");
     elapsedTimer->stop();
     ui->tabWidget->setTabEnabled(1, true);
     if (autoModeTimer->isActive()) {
         autoModeTimer->stop();
     }
-    emit testStopped();
 }
 
 void MainWindow::runAutoTest()
 {
     if (autoTableIsValid()) {
-            emit testStarted();
-            powerSupply->setVoltage(ui->autoTestTable->item(0, 0)->text());
-            powerSupply->setCurrentLimit(ui->autoCurrentLimitSpinBox->text());
-            pwmBoard->setDutyCycle(ui->autoTestTable->item(0, 1)->text());
-            pwmBoard->setFrequency(ui->autoFreqComboBox->currentText());
-            autoModeTimer->setInterval(ui->autoTestTable->item(0, 2)->text().toInt() * 1000);
-            elapsedTestTime->start(); //store the current time
-            elapsedTimer->start();
-            autoModeTimer->start();
+        powerSupply->start();
+        powerSupply->setVoltage(ui->autoTestTable->item(0, 0)->text());
+        powerSupply->setCurrentLimit(ui->autoCurrentLimitSpinBox->text());
+        pwmBoard->setDutyCycle(ui->autoTestTable->item(0, 1)->text());
+        pwmBoard->setFrequency(ui->autoFreqComboBox->currentText());
+        autoModeTimer->setInterval(ui->autoTestTable->item(0, 2)->text().toInt() * 1000);
+        elapsedTestTime->start(); //store the current time
+        elapsedTimer->start();
+        autoModeTimer->start();
+        clearResults();
     }
 }
 
@@ -76,8 +78,10 @@ void MainWindow::goToNextSpeed()
     static int row = 0;
     if (row + 1 == ui->autoTestTable->rowCount()) {
         stopTest();
+        displayResults(row);
         row = 0;
     } else {
+        displayResults(row);
         ++row;
         powerSupply->setVoltage(ui->autoTestTable->item(row, 0)->text());
         pwmBoard->setDutyCycle(ui->autoTestTable->item(row, 1)->text());
@@ -111,12 +115,19 @@ void MainWindow::updateElapsedTimeDisplay()
 void MainWindow::addTableRow()
 {
     ui->autoTestTable->setRowCount(ui->autoTestTable->rowCount() + 1);
+    ui->resultsTable->setRowCount(ui->resultsTable->rowCount() + 1);
+    int lastRow = ui->resultsTable->rowCount() - 1;
+    for (int column = 0; column < ui->resultsTable->columnCount(); ++column) { //fill the new row with items and only set the 'ItemIsEnabled' flag to prevent editing.
+        ui->resultsTable->setItem(lastRow, column, new QTableWidgetItem);
+        ui->resultsTable->item(lastRow, column)->setFlags(Qt::ItemIsEnabled);
+    }
 }
 
 void MainWindow::removeTableRow()
 {
-    if (ui->autoTestTable->rowCount() > 1) {
+    if (ui->autoTestTable->rowCount() > 1 && ui->resultsTable->rowCount() > 1) {
         ui->autoTestTable->setRowCount(ui->autoTestTable->rowCount() - 1);
+        ui->resultsTable->setRowCount(ui->resultsTable->rowCount() - 1);
     }
 }
 
@@ -150,9 +161,6 @@ void MainWindow::makeConnections()
 {
     connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::showSettingsDialog);
     connect(elapsedTimer, &QTimer::timeout, this, &MainWindow::updateElapsedTimeDisplay);
-    connect(this, &MainWindow::testStarted, powerSupply, &PowerSupply::start);
-    connect(this, &MainWindow::testStarted, pwmBoard, &PwmBoard::sendPwmCommand);
-    connect(this, &MainWindow::testStopped, powerSupply, &PowerSupply::stop);
     connect(ui->voltageSpinBox, SIGNAL(valueChanged(QString)), powerSupply, SLOT(setVoltage(QString)));
     connect(ui->currentLimitSpinBox, SIGNAL(valueChanged(QString)), powerSupply, SLOT(setCurrentLimit(QString)));
     connect(ui->dutyCycleSpinBox, SIGNAL(valueChanged(QString)), pwmBoard, SLOT(setDutyCycle(QString)));
@@ -176,5 +184,19 @@ void MainWindow::setupTimers()
     performanceTimer->setInterval(ui->measurementIntervalSpinBox->value());
     performanceTimer->start();
     autoModeTimer->setTimerType(Qt::PreciseTimer);
+}
+
+void MainWindow::displayResults(const int &row)
+{
+    ui->resultsTable->item(row, 0)->setText(ui->aveRpmValueLabel->text());
+    ui->resultsTable->item(row, 1)->setText((ui->currentValueLabel->text()));
+}
+
+void MainWindow::clearResults()
+{
+    for (int row = 0; row < ui->resultsTable->rowCount(); ++row) {
+        ui->resultsTable->item(row, 0)->setText("");
+        ui->resultsTable->item(row, 1)->setText("");
+    }
 }
 
