@@ -39,6 +39,8 @@ private:
     bool autoTableIsValid();
     void makeConnections();
     void setupTimers();
+    void displayResults(const int &row);
+    void clearResults();
 
 private slots:
     void showSettingsDialog() const;
@@ -56,8 +58,6 @@ private slots:
     void goToNextSpeed();
 
 signals:
-    void testStarted();
-    void testStopped();
 
 };
 
