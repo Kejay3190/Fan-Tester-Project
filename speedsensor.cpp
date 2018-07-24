@@ -15,7 +15,7 @@ SpeedSensor::~SpeedSensor()
     delete rpmSamples;
 }
 
-void SpeedSensor::setBladeCount(int newBladeCount)
+void SpeedSensor::setBladeCount(const int &newBladeCount)
 {
     if (bladeCount != newBladeCount) {
         bladeCount = newBladeCount;
@@ -30,8 +30,8 @@ void SpeedSensor::clearBoardCount()
 void SpeedSensor::calculateRpm()
 {
     cbCIn32(0, 0, &sensorCount); //read the count from the board and store it in the given variable
-    rpm = (double (sensorCount) / double (bladeCount)) / (double (time->restart()) / double (60000));
-    if (rpmSamples->count() < sampleLimit) {
+    rpm = (static_cast<double>(sensorCount) / bladeCount) / (static_cast<double>(time->restart()) / 60000);
+    if (rpmSamples->count() < sampleLimit) { //only store up to the number of samples set by the user
         rpmSamples->append(rpm);
     } else {
         rpmSamples->removeFirst();
@@ -46,7 +46,7 @@ void SpeedSensor::calculateRpm()
     emit rpmChanged(rpm, aveRpm);
 }
 
-void SpeedSensor::setSampleLimit(int newSampleLimit)
+void SpeedSensor::setSampleLimit(const int &newSampleLimit)
 {
     if (sampleLimit != newSampleLimit) {
         sampleLimit = newSampleLimit;

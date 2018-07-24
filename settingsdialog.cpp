@@ -24,43 +24,43 @@ void SettingsDialog::readSettings() //set the index of the comboboxes according 
 
     int index;
 
-    index = ui->supplyBaudComboBox->findData(settings.value("Baud Rate", 19200).value<QSerialPort::BaudRate>());
+    index = ui->supplyBaudComboBox->findData(settings.value("Baud Rate", 19200));
     ui->supplyBaudComboBox->setCurrentIndex(index);
 
-    index = ui->supplyDataBitsComboBox->findData(settings.value("Data Bits", 8).value<QSerialPort::DataBits>());
+    index = ui->supplyDataBitsComboBox->findData(settings.value("Data Bits", 8));
     ui->supplyDataBitsComboBox->setCurrentIndex(index);
 
-    index = ui->supplyFlowComboBox->findData(settings.value("Flow Control", 0).value<QSerialPort::FlowControl>());
+    index = ui->supplyFlowComboBox->findData(settings.value("Flow Control", 0));
     ui->supplyFlowComboBox->setCurrentIndex(index);
 
-    index = ui->supplyParityComboBox->findData(settings.value("Parity", 0).value<QSerialPort::Parity>());
+    index = ui->supplyParityComboBox->findData(settings.value("Parity", 0));
     ui->supplyParityComboBox->setCurrentIndex(index);
 
-    index = ui->supplyPortComboBox->findData(settings.value("Port Name", "COM1").toString());
+    index = ui->supplyPortComboBox->findData(settings.value("Port Name", "COM1"));
     ui->supplyPortComboBox->setCurrentIndex(index);
 
-    index = ui->supplyStopBitsComboBox->findData(settings.value("Stop Bits", 1).value<QSerialPort::StopBits>());
+    index = ui->supplyStopBitsComboBox->findData(settings.value("Stop Bits", 1));
     ui->supplyStopBitsComboBox->setCurrentIndex(index);
 
     settings.endGroup();
     settings.beginGroup("PWM Board Port");
 
-    index = ui->fanPortComboBox->findData(settings.value("Port Name", "COM7").toString());
+    index = ui->fanPortComboBox->findData(settings.value("Port Name", "COM7"));
     ui->fanPortComboBox->setCurrentIndex(index);
 
-    index = ui->fanBaudComboBox->findData(settings.value("Baud Rate", 19200).value<QSerialPort::BaudRate>());
+    index = ui->fanBaudComboBox->findData(settings.value("Baud Rate", 19200));
     ui->fanBaudComboBox->setCurrentIndex(index);
 
-    index = ui->fanDataBitsComboBox->findData(settings.value("Data Bits", 8).value<QSerialPort::DataBits>());
+    index = ui->fanDataBitsComboBox->findData(settings.value("Data Bits", 8));
     ui->fanDataBitsComboBox->setCurrentIndex(index);
 
-    index = ui->fanFlowComboBox->findData(settings.value("Flow Control", 0).value<QSerialPort::FlowControl>());
+    index = ui->fanFlowComboBox->findData(settings.value("Flow Control", 0));
     ui->fanFlowComboBox->setCurrentIndex(index);
 
-    index = ui->fanParityComboBox->findData(settings.value("Parity", 0).value<QSerialPort::Parity>());
+    index = ui->fanParityComboBox->findData(settings.value("Parity", 0));
     ui->fanParityComboBox->setCurrentIndex(index);
 
-    index = ui->fanStopBitsComboBox->findData(settings.value("Stop Bits", 1).value<QSerialPort::StopBits>());
+    index = ui->fanStopBitsComboBox->findData(settings.value("Stop Bits", 1));
     ui->fanStopBitsComboBox->setCurrentIndex(index);
 
     settings.endGroup();
@@ -95,7 +95,7 @@ void SettingsDialog::writeSettings()
 
 void SettingsDialog::createItemData()
 {
-    for (int i = 0, j = 1; i < 20; ++i, ++j) {
+    for (int i = 0, j = 1; i < ui->supplyPortComboBox->count(); ++i, ++j) {
         ui->supplyPortComboBox->setItemData(i, QString("COM%1").arg(j));
     }
 
@@ -127,7 +127,7 @@ void SettingsDialog::createItemData()
     ui->supplyParityComboBox->setItemData(3, QSerialPort::SpaceParity);
     ui->supplyParityComboBox->setItemData(4, QSerialPort::MarkParity);
 
-    for (int i = 0, j = 1; i < 20; ++i, ++j) {
+    for (int i = 0, j = 1; i < ui->supplyPortComboBox->count(); ++i, ++j) {
         ui->fanPortComboBox->setItemData(i, QString("COM%1").arg(j));
     }
 

@@ -34,8 +34,10 @@ void MainWindow::startTest()
         elapsedTestTime->start(); //store the current time
         elapsedTimer->start();
         ui->tabWidget->setTabEnabled(1, false);
-    } else { //auto mode is selected
+    } else if (autoTableIsValid()) { //auto mode is selected and all fields are valid in the table.
         runAutoTest();
+    } else {
+        QMessageBox::warning(this, tr("Free Air Tester"), tr("You must enter a value in each field to continue."), QMessageBox::Ok);
     }
 }
 
@@ -52,7 +54,6 @@ void MainWindow::stopTest()
 
 void MainWindow::runAutoTest()
 {
-    if (autoTableIsValid()) {
         powerSupply->start();
         powerSupply->setVoltage(ui->autoTestTable->item(0, 0)->text());
         powerSupply->setCurrentLimit(ui->autoCurrentLimitSpinBox->text());
@@ -63,7 +64,6 @@ void MainWindow::runAutoTest()
         elapsedTimer->start();
         autoModeTimer->start();
         clearResults();
-    }
 }
 
 void MainWindow::setPerformanceTimerInterval(const int &newInterval)
@@ -116,7 +116,12 @@ void MainWindow::addTableRow()
 {
     ui->autoTestTable->setRowCount(ui->autoTestTable->rowCount() + 1);
     ui->resultsTable->setRowCount(ui->resultsTable->rowCount() + 1);
-    int lastRow = ui->resultsTable->rowCount() - 1;
+    int lastRow = ui->autoTestTable->rowCount() - 1;
+    for (int column = 0; column < ui->autoTestTable->columnCount(); ++column) {
+        ui->autoTestTable->setItem(lastRow, column, new QTableWidgetItem);
+        ui->autoTestTable->item(lastRow, column)->setFlags(Qt::ItemIsEnabled | Qt::ItemIsEditable);
+    }
+    lastRow = ui->resultsTable->rowCount() - 1;
     for (int column = 0; column < ui->resultsTable->columnCount(); ++column) { //fill the new row with items and only set the 'ItemIsEnabled' flag to prevent editing.
         ui->resultsTable->setItem(lastRow, column, new QTableWidgetItem);
         ui->resultsTable->item(lastRow, column)->setFlags(Qt::ItemIsEnabled);

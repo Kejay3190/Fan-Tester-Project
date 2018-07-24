@@ -15,11 +15,11 @@ public:
     ~SpeedSensor();
 
 private:
-    unsigned long sensorCount = 0;
+    unsigned long sensorCount = 0; //how many blades were seen by the sensor
     double rpm = 0;
     double aveRpm = 0;
-    int bladeCount = 0;
-    int sampleLimit = 0;
+    int bladeCount = 0; //the number of blades on the fan being tested
+    int sampleLimit = 0; //the max number of samples to average
     QTime *time;
     QList<double> *rpmSamples;
 
@@ -30,8 +30,8 @@ signals:
 
 public slots:
     void calculateRpm();
-    void setSampleLimit(int newSampleLimit);
-    void setBladeCount(int newBladeCount);
+    void setSampleLimit(const int &newSampleLimit);
+    void setBladeCount(const int &newBladeCount);
 };
 
 #endif // SPEEDSENSOR_H
