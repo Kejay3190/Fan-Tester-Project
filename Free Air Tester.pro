@@ -6,9 +6,9 @@
 
 QT       += core gui serialport
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
 
-TARGET = SerialProject
+TARGET = FreeAirTester
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -29,7 +29,9 @@ SOURCES += \
     settingsdialog.cpp \
     powersupply.cpp \
     pwmboard.cpp \
-    speedsensor.cpp
+    speedsensor.cpp \
+    qcustomplot.cpp \
+    plotdialog.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -37,13 +39,19 @@ HEADERS += \
     cbw.h \
     powersupply.h \
     pwmboard.h \
-    speedsensor.h
+    speedsensor.h \
+    qcustomplot.h \
+    plotdialog.h
 
 FORMS += \
         mainwindow.ui \
-    settingsdialog.ui
+    settingsdialog.ui \
+    plotdialog.ui
 
 win32: LIBS += -L$$PWD/./ -lcbw32
 
 INCLUDEPATH += $$PWD/.
 DEPENDPATH += $$PWD/.
+
+RESOURCES += \
+    resources/pdficon.qrc

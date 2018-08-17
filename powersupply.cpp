@@ -121,5 +121,5 @@ void PowerSupply::measureVoltageAndCurrent()
 {
     sendMeasureVoltageCommand();
     sendMeasureCurrentCommand();
-    emit voltageAndCurrentMeasurementChanged(voltageMeasurement, currentMeasurement);
+    emit voltageAndCurrentMeasurementChanged(voltageMeasurement.toDouble(), currentMeasurement.toDouble());
 }

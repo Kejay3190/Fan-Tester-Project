@@ -28,7 +28,7 @@ private:
     void configPowerSupply();
 
 signals:
-    void voltageAndCurrentMeasurementChanged(QString, QString);
+    void voltageAndCurrentMeasurementChanged(double, double);
 
 public slots:
     void setVoltage(const QString &newVoltage);

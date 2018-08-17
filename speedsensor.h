@@ -8,11 +8,14 @@
 
 class SpeedSensor : public QObject
 {
+    friend class MainWindow;
     Q_OBJECT
 
 public:
     explicit SpeedSensor(QObject *parent, const int &fanBladeCount, const int &maxSamples);
     ~SpeedSensor();
+    void clearSamples();
+    void clearBoardCount();
 
 private:
     unsigned long sensorCount = 0; //how many blades were seen by the sensor
@@ -23,10 +26,8 @@ private:
     QTime *time;
     QList<double> *rpmSamples;
 
-    void clearBoardCount();
-
 signals:
-    void rpmChanged(const double &rpm, const double &aveRpm);
+    void rpmChanged(const double &aveRpm, const double &rpm);
 
 public slots:
     void calculateRpm();
