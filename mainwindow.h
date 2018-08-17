@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <algorithm>
 #include <QMainWindow>
 #include <QtSerialPort>
 #include <QTime>
@@ -9,11 +10,12 @@
 #include "pwmboard.h"
 #include "speedsensor.h"
 
+//forward declarations
 namespace Ui {
-class MainWindow; //forward declaration of Ui::MainWindow
+class MainWindow;
 }
-
-class SettingsDialog; //forward declaration
+class SettingsDialog;
+class PlotDialog;
 
 class MainWindow : public QMainWindow
 {
@@ -33,6 +35,9 @@ private:
     PwmBoard *pwmBoard;
     SpeedSensor *speedSensor;
     SettingsDialog *settingsDialog;
+    PlotDialog *plotDialog;
+
+   int autoTestSpeed = 0;
 
     void applySettings(const SettingsDialog *settingsDialog);
     void enableWidgets();
@@ -44,8 +49,9 @@ private:
 
 private slots:
     void showSettingsDialog() const;
+    void showPlotterDialog() const;
     void updateRpmDisplay(const double &rpm, const double &aveRpm);
-    void updateVoltageAndCurrentDisplay(const QString &voltage, const QString &current);
+    void updateVoltageAndCurrentDisplay(const double &voltage, const double &current);
     void updateElapsedTimeDisplay();
     void addTableRow();
     void removeTableRow();

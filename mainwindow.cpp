@@ -2,10 +2,13 @@
 #include "ui_mainwindow.h"
 #include "settingsdialog.h"
 #include "ui_settingsdialog.h"
+#include "plotdialog.h"
+#include "ui_plotdialog.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent), ui(new Ui::MainWindow), elapsedTestTime(new QTime), elapsedTimer(new QTimer(this)),
-    performanceTimer(new QTimer(this)), autoModeTimer(new QTimer(this)), settingsDialog(new SettingsDialog(this))
+    performanceTimer(new QTimer(this)), autoModeTimer(new QTimer(this)), settingsDialog(new SettingsDialog(this)),
+    plotDialog(new PlotDialog(this))
 {
     ui->setupUi(this);
     powerSupply = new PowerSupply(this);
@@ -25,45 +28,48 @@ MainWindow::~MainWindow()
 
 void MainWindow::startTest()
 {
+    powerSupply->start();
     if (ui->manualRadioButton->isChecked()) {//manual mode is selected
-        powerSupply->start();
         powerSupply->setVoltage(ui->voltageSpinBox->text());
         powerSupply->setCurrentLimit(ui->currentLimitSpinBox->text());
         pwmBoard->setDutyCycle(ui->dutyCycleSpinBox->text());
         pwmBoard->setFrequency(ui->freqComboBox->currentText());
-        elapsedTestTime->start(); //store the current time
-        elapsedTimer->start();
-        ui->tabWidget->setTabEnabled(1, false);
     } else if (autoTableIsValid()) { //auto mode is selected and all fields are valid in the table.
         runAutoTest();
     } else {
         QMessageBox::warning(this, tr("Free Air Tester"), tr("You must enter a value in each field to continue."), QMessageBox::Ok);
     }
+    elapsedTestTime->start(); //store the current time
+    elapsedTimer->start();
+    performanceTimer->start();
+    ui->tabWidget->setTabEnabled(1, false);
+    plotDialog->clearPlot();
+    speedSensor->clearBoardCount();
+    speedSensor->clearSamples();
 }
 
 void MainWindow::stopTest()
 {
     powerSupply->stop();
     pwmBoard->setDutyCycle("0");
-    elapsedTimer->stop();
     ui->tabWidget->setTabEnabled(1, true);
+    elapsedTimer->stop();
+    performanceTimer->stop();
     if (autoModeTimer->isActive()) {
         autoModeTimer->stop();
     }
+    autoTestSpeed = 0;
 }
 
 void MainWindow::runAutoTest()
 {
-        powerSupply->start();
-        powerSupply->setVoltage(ui->autoTestTable->item(0, 0)->text());
-        powerSupply->setCurrentLimit(ui->autoCurrentLimitSpinBox->text());
-        pwmBoard->setDutyCycle(ui->autoTestTable->item(0, 1)->text());
-        pwmBoard->setFrequency(ui->autoFreqComboBox->currentText());
-        autoModeTimer->setInterval(ui->autoTestTable->item(0, 2)->text().toInt() * 1000);
-        elapsedTestTime->start(); //store the current time
-        elapsedTimer->start();
-        autoModeTimer->start();
-        clearResults();
+    powerSupply->setVoltage(ui->autoTestTable->item(0, 0)->text());
+    powerSupply->setCurrentLimit(ui->autoCurrentLimitSpinBox->text());
+    pwmBoard->setDutyCycle(ui->autoTestTable->item(0, 1)->text());
+    pwmBoard->setFrequency(ui->autoFreqComboBox->currentText());
+    autoModeTimer->setInterval(ui->autoTestTable->item(0, 2)->text().toInt() * 1000.0);
+    autoModeTimer->start();
+    clearResults();
 }
 
 void MainWindow::setPerformanceTimerInterval(const int &newInterval)
@@ -75,17 +81,16 @@ void MainWindow::setPerformanceTimerInterval(const int &newInterval)
 
 void MainWindow::goToNextSpeed()
 {
-    static int row = 0;
-    if (row + 1 == ui->autoTestTable->rowCount()) {
+    //static int row = 0;
+    if (autoTestSpeed == ui->autoTestTable->rowCount() - 1) {
+        displayResults(autoTestSpeed);
         stopTest();
-        displayResults(row);
-        row = 0;
     } else {
-        displayResults(row);
-        ++row;
-        powerSupply->setVoltage(ui->autoTestTable->item(row, 0)->text());
-        pwmBoard->setDutyCycle(ui->autoTestTable->item(row, 1)->text());
-        autoModeTimer->setInterval(ui->autoTestTable->item(row, 2)->text().toInt() * 1000);
+        displayResults(autoTestSpeed);
+        ++autoTestSpeed;
+        powerSupply->setVoltage(ui->autoTestTable->item(autoTestSpeed, 0)->text());
+        pwmBoard->setDutyCycle(ui->autoTestTable->item(autoTestSpeed, 1)->text());
+        autoModeTimer->setInterval(ui->autoTestTable->item(autoTestSpeed, 2)->text().toInt() * 1000.0);
     }
 }
 
@@ -94,16 +99,25 @@ void MainWindow::showSettingsDialog() const
     settingsDialog->exec();
 }
 
-void MainWindow::updateRpmDisplay(const double &rpm, const double &aveRpm)
+void MainWindow::showPlotterDialog() const
+{
+    plotDialog->show();
+}
+
+void MainWindow::updateRpmDisplay(const double &rpm, const double &aveRpm) //update the RPM labels on the main window and plot the ave rpm.
 {
     ui->rpmValueLabel->setText(QString::number(rpm));
     ui->aveRpmValueLabel->setText(QString::number(aveRpm));
+    double key = elapsedTestTime->elapsed() / 1000.0;
+    plotDialog->plotRpm(key,aveRpm);
 }
 
-void MainWindow::updateVoltageAndCurrentDisplay(const QString &voltage, const QString &current)
+void MainWindow::updateVoltageAndCurrentDisplay(const double &voltage, const double &current)
 {
-    ui->voltageValueLabel->setText(voltage);
-    ui->currentValueLabel->setText(current);
+    ui->voltageValueLabel->setText(QString::number(voltage));
+    ui->currentValueLabel->setText(QString::number(current));
+    double key = elapsedTestTime->elapsed() / 1000.0;
+    plotDialog->plotVoltageAndCurrent(key, voltage, current);
 }
 
 void MainWindow::updateElapsedTimeDisplay()
@@ -184,10 +198,9 @@ void MainWindow::makeConnections()
 void MainWindow::setupTimers()
 {
     elapsedTimer->setTimerType(Qt::PreciseTimer);
-    elapsedTimer->setInterval(100);
+    elapsedTimer->setInterval(0);
     performanceTimer->setTimerType(Qt::PreciseTimer);
     performanceTimer->setInterval(ui->measurementIntervalSpinBox->value());
-    performanceTimer->start();
     autoModeTimer->setTimerType(Qt::PreciseTimer);
 }
 

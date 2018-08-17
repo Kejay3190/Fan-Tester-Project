@@ -6,7 +6,6 @@ SpeedSensor::SpeedSensor(QObject *parent, const int &fanBladeCount, const int &m
 {
     time = new QTime(QTime::currentTime());
     rpmSamples = new QList<double>;
-    clearBoardCount();
 }
 
 SpeedSensor::~SpeedSensor()
@@ -22,15 +21,10 @@ void SpeedSensor::setBladeCount(const int &newBladeCount)
     }
 }
 
-void SpeedSensor::clearBoardCount()
-{
-    cbCClear(0, 0); //clear the count on the daq board
-}
-
 void SpeedSensor::calculateRpm()
 {
     cbCIn32(0, 0, &sensorCount); //read the count from the board and store it in the given variable
-    rpm = (static_cast<double>(sensorCount) / bladeCount) / (static_cast<double>(time->restart()) / 60000);
+    rpm = (static_cast<double>(sensorCount) / bladeCount) / (time->restart() / 60000.0);
     if (rpmSamples->count() < sampleLimit) { //only store up to the number of samples set by the user
         rpmSamples->append(rpm);
     } else {
@@ -42,8 +36,18 @@ void SpeedSensor::calculateRpm()
         sum += sample;
     }
     aveRpm = sum / rpmSamples->count(); //average the rpm samples
-    cbCClear(0, 0); //clear the count on the board
+    clearBoardCount();
     emit rpmChanged(rpm, aveRpm);
+}
+
+void SpeedSensor::clearSamples()
+{
+    rpmSamples->clear();
+}
+
+void SpeedSensor::clearBoardCount()
+{
+    cbCClear(0, 0);
 }
 
 void SpeedSensor::setSampleLimit(const int &newSampleLimit)
