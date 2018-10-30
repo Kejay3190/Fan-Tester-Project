@@ -12,7 +12,7 @@ class PlotDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit PlotDialog(QWidget *parent);
+    explicit PlotDialog(Qt::WindowFlags f);
     ~PlotDialog();
     void plotRpm(const double &key, const double &value);
     void plotVoltageAndCurrent(const double &key, const double &voltage, const double &current);
