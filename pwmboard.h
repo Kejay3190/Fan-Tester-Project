@@ -20,6 +20,7 @@ private:
     QString frequency;
     QString dutyCycle;
     QMap<QString, QChar> freqMap;
+    bool dutyCycleInverted = false;
 
     void buildFreqMap();
 
@@ -29,6 +30,7 @@ public slots:
     void sendPwmCommand();
     void setFrequency(const QString &newFrequency);
     void setDutyCycle(const QString &newDutyCycle);
+    void setDutyCycleInverted(bool value);
     void setupPort();
 };
 

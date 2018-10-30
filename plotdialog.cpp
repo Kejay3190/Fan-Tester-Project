@@ -1,9 +1,8 @@
 #include "plotdialog.h"
 #include "ui_plotdialog.h"
 
-PlotDialog::PlotDialog(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::PlotDialog)
+PlotDialog::PlotDialog(Qt::WindowFlags f) :
+    QDialog(nullptr, f), ui(new Ui::PlotDialog)
 {
     ui->setupUi(this);
     ui->plot->axisRect()->setupFullAxesBox();
@@ -25,11 +24,18 @@ PlotDialog::PlotDialog(QWidget *parent) :
     ui->plot->yAxis2->setTickLabels(true);
     ui->plot->yAxis2->setRange(0.0, 60.0);
     ui->plot->legend->setVisible(true);
+    ui->plot->legend->setFillOrder(QCPLegend::foColumnsFirst);
+    QCPLayoutGrid *subLayout = new QCPLayoutGrid;
+    subLayout->addElement(0, 0, ui->plot->legend);
+    subLayout->setMargins(QMargins(5, 0, 5, 5));
+    ui->plot->plotLayout()->addElement(1, 0, subLayout);
+    ui->plot->plotLayout()->setRowStretchFactor(1, 0.001);
     ui->plot->setInteraction(QCP::iRangeDrag, true);
     ui->plot->setInteraction(QCP::iRangeZoom, true);
     ui->plot->axisRect()->setRangeDrag(Qt::Horizontal);
 
     connect(ui->savePdfToolButton, &QToolButton::clicked, this, &PlotDialog::saveAsPdf);
+    connect(ui->closePushButton, &QPushButton::clicked, this, &PlotDialog::close);
 }
 
 PlotDialog::~PlotDialog()
@@ -44,7 +50,7 @@ void PlotDialog::plotRpm(const double &key, const double &value)
     //find the QCPGraphData that holds the largest RPM value
     QCPGraphDataContainer::const_iterator beg = ui->plot->graph(0)->data()->constBegin();
     QCPGraphDataContainer::const_iterator end = ui->plot->graph(0)->data()->constEnd();
-    const QCPGraphData *maxValue = std::max_element(beg, end, [] (QCPGraphData d1, QCPGraphData d2) { return d1.value < d2.value; } );
+    const QCPGraphData *maxValue = std::max_element(beg, end, [] (const QCPGraphData &d1, const QCPGraphData &d2) { return d1.value < d2.value; } );
     ui->plot->yAxis->setRangeUpper(maxValue->value + 500.0);
     ui->plot->replot();
 }

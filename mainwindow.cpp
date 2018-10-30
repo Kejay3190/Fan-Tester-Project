@@ -8,7 +8,7 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent), ui(new Ui::MainWindow), elapsedTestTime(new QTime), elapsedTimer(new QTimer(this)),
     performanceTimer(new QTimer(this)), autoModeTimer(new QTimer(this)), settingsDialog(new SettingsDialog(this)),
-    plotDialog(new PlotDialog(this))
+    plotDialog(new PlotDialog(Qt::WindowMinimizeButtonHint | Qt::WindowCloseButtonHint))
 {
     ui->setupUi(this);
     powerSupply = new PowerSupply(this);
@@ -28,13 +28,14 @@ MainWindow::~MainWindow()
 
 void MainWindow::startTest()
 {
-    powerSupply->start();
     if (ui->manualRadioButton->isChecked()) {//manual mode is selected
+        powerSupply->start();
         powerSupply->setVoltage(ui->voltageSpinBox->text());
         powerSupply->setCurrentLimit(ui->currentLimitSpinBox->text());
         pwmBoard->setDutyCycle(ui->dutyCycleSpinBox->text());
         pwmBoard->setFrequency(ui->freqComboBox->currentText());
     } else if (autoTableIsValid()) { //auto mode is selected and all fields are valid in the table.
+        powerSupply->start();
         runAutoTest();
     } else {
         QMessageBox::warning(this, tr("Free Air Tester"), tr("You must enter a value in each field to continue."), QMessageBox::Ok);
@@ -183,6 +184,7 @@ void MainWindow::makeConnections()
     connect(ui->voltageSpinBox, SIGNAL(valueChanged(QString)), powerSupply, SLOT(setVoltage(QString)));
     connect(ui->currentLimitSpinBox, SIGNAL(valueChanged(QString)), powerSupply, SLOT(setCurrentLimit(QString)));
     connect(ui->dutyCycleSpinBox, SIGNAL(valueChanged(QString)), pwmBoard, SLOT(setDutyCycle(QString)));
+    connect(ui->invertDutyCycleCheckBox, &QCheckBox::toggled, pwmBoard, &PwmBoard::setDutyCycleInverted);
     connect(ui->samplesToAvgSpinBox, SIGNAL(valueChanged(int)), speedSensor, SLOT(setSampleLimit(int)));
     connect(ui->bladeCountSpinBox, SIGNAL(valueChanged(int)), speedSensor, SLOT(setBladeCount(int)));
     connect(ui->freqComboBox, &QComboBox::currentTextChanged, pwmBoard, &PwmBoard::setFrequency);
